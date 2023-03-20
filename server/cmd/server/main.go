@@ -4,9 +4,15 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"regexp"
+
+	"minisearch/server/packages/watcher"
 )
 
-var configFile string
+var (
+	TxtTypes   = regexp.MustCompile(".(txt)$")
+	configFile string
+)
 
 func init() {
 	flag.StringVar(&configFile, "config", "/etc/calendar/config.json", "Path to configuration file")
@@ -21,4 +27,14 @@ func main() {
 	}
 
 	fmt.Println(config)
+
+	watcherInstance := watcher.New(watcher.Settings{
+		Folder:    config.FilesFolder,
+		FileTypes: TxtTypes,
+	})
+
+	err = watcherInstance.RunFilesChecking()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
