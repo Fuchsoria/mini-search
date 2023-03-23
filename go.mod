@@ -3,6 +3,7 @@ module minisearch
 go 1.18
 
 require (
+	github.com/cespare/xxhash v1.1.0
 	github.com/radovskyb/watcher v1.0.7
 	github.com/spf13/viper v1.15.0
 )

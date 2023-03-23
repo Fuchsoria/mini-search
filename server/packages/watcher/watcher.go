@@ -2,11 +2,16 @@ package watcher
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 
+	"minisearch/server/packages/app"
+
+	"github.com/cespare/xxhash"
 	"github.com/radovskyb/watcher"
 )
 
@@ -16,6 +21,7 @@ type Settings struct {
 }
 
 type Watcher struct {
+	data     map[uint64]app.TextData
 	instance *watcher.Watcher
 	settings Settings
 }
@@ -45,6 +51,47 @@ func (w *Watcher) RunFilesChecking() error {
 
 func (w *Watcher) GetFiles() map[string]fs.FileInfo {
 	return w.instance.WatchedFiles()
+}
+
+func (w *Watcher) getFileContent(path string) (error, string, uint64) {
+	file, err := os.Open(path)
+	if err != nil {
+		return err, "", 0
+	}
+
+	defer file.Close()
+
+	bytes, err := io.ReadAll(file)
+	if err != nil {
+		return err, "", 0
+	}
+
+	hash := xxhash.Sum64(bytes)
+
+	return nil, string(bytes), hash
+}
+
+func (w *Watcher) CacheData() error {
+	files := w.GetFiles()
+
+	for _, v := range files {
+		path := filepath.Join(w.settings.Folder, v.Name())
+
+		err, content, hash := w.getFileContent(path)
+		if err != nil {
+			fmt.Println(err, path)
+
+			continue
+		}
+
+		w.data[hash] = app.TextData{
+			Hash:     hash,
+			Filename: v.Name(),
+			Content:  content,
+		}
+	}
+
+	return nil
 }
 
 func (w *Watcher) Len() int {
