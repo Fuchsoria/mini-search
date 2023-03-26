@@ -94,6 +94,10 @@ func (w *Watcher) CacheData() error {
 	return nil
 }
 
+func (w *Watcher) CachedData() map[uint64]app.TextData {
+	return w.data
+}
+
 func (w *Watcher) Len() int {
 	return len(w.instance.WatchedFiles())
 }
@@ -102,5 +106,6 @@ func New(settings Settings) *Watcher {
 	return &Watcher{
 		instance: watcher.New(),
 		settings: settings,
+		data:     make(map[uint64]app.TextData),
 	}
 }

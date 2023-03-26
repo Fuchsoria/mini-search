@@ -6,6 +6,8 @@ import (
 	"log"
 	"regexp"
 
+	"minisearch/server/packages/api"
+	"minisearch/server/packages/searchalg"
 	"minisearch/server/packages/watcher"
 )
 
@@ -15,7 +17,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.json", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "/etc/app/config.json", "Path to configuration file")
 }
 
 func main() {
@@ -34,6 +36,19 @@ func main() {
 	})
 
 	err = watcherInstance.RunFilesChecking()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = watcherInstance.CacheData()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	searchInstance := searchalg.New(searchalg.Settings{}, watcherInstance)
+	apiInstance := api.New(api.Settings{}, searchInstance)
+
+	err = apiInstance.ServiceStart()
 	if err != nil {
 		log.Fatal(err)
 	}
