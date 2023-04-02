@@ -1,12 +1,17 @@
 package api
 
 import (
+	"fmt"
+
 	"minisearch/server/packages/app"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
-type Settings struct{}
+type Settings struct {
+	Client string
+}
 
 type API struct {
 	search   app.SearchI
@@ -15,6 +20,13 @@ type API struct {
 
 func (a *API) ServiceStart() error {
 	app := fiber.New()
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: fmt.Sprintf("http://localhost:3000, %s", a.settings.Client),
+		AllowHeaders: "Origin, Content-Type, Accept, GET",
+	}))
+
+	app.Static("/", "./static")
 
 	app.Get("/api/search", func(c *fiber.Ctx) error {
 		query := c.Query("query")

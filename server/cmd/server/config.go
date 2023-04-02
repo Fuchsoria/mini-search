@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	BackendAPI  string `json:"backend_api"`
+	Client      string `json:"client"`
 	FilesFolder string `json:"files_folder"`
 }
 
@@ -19,7 +19,7 @@ func NewConfig() (Config, error) {
 	}
 
 	return Config{
-		BackendAPI:  viper.GetString("backend_api"),
+		Client:      viper.GetString("client"),
 		FilesFolder: viper.GetString("files_folder"),
 	}, nil
 }
